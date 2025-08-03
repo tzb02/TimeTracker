@@ -9,7 +9,7 @@ This is a condensed guide for immediate Vercel deployment. For detailed explanat
 {
   "version": 2,
   "name": "time-tracker-frontend",
-  "buildCommand": "cd packages/client && npm run build",
+  "buildCommand": "cd packages/client && npx vite build",
   "outputDirectory": "packages/client/dist",
   "installCommand": "npm install",
   "framework": "vite",
@@ -25,6 +25,8 @@ This is a condensed guide for immediate Vercel deployment. For detailed explanat
   ]
 }
 ```
+
+**IMPORTANT**: Use `npx vite build` instead of `npm run build` to avoid TypeScript compilation errors.
 
 ### `packages/server/vercel.json` (Backend)
 ```json
@@ -94,7 +96,7 @@ NODE_ENV=production
 1. Create new Vercel project (same repo)
 2. Set root directory: `packages/client`
 3. Framework: Vite
-4. Build command: `npm run build`
+4. Build command: `npx vite build`
 5. Output directory: `dist`
 
 ### Frontend Environment Variables:
