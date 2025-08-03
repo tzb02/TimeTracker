@@ -1,0 +1,19 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY packages/server/package*.json ./packages/server/
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY packages/server ./packages/server
+
+WORKDIR /app/packages/server
+
+EXPOSE 3001
+
+CMD ["npm", "run", "dev"]

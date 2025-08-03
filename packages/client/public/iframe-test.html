@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Tracker Iframe Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .iframe-container {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        iframe {
+            width: 100%;
+            border: none;
+            display: block;
+        }
+        
+        .controls {
+            margin: 10px 0;
+        }
+        
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        button:hover {
+            background: #005a87;
+        }
+        
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .size-info {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Time Tracker Iframe Embedding Test</h1>
+        <p>This page simulates how the time tracker would be embedded in GoHighLevel or other platforms.</p>
+        
+        <!-- Small iframe test (mobile-like) -->
+        <div class="test-section">
+            <h2>Small Iframe (300x400) - Mobile Simulation</h2>
+            <div class="size-info">Simulates mobile or narrow sidebar embedding</div>
+            <div class="iframe-container">
+                <iframe 
+                    id="small-iframe"
+                    src="http://localhost:5173"
+                    width="300" 
+                    height="400"
+                    title="Time Tracker Small">
+                </iframe>
+            </div>
+            <div class="controls">
+                <button onclick="sendMessage('small-iframe', 'change-view', {view: 'timer'})">Switch to Timer</button>
+                <button onclick="sendMessage('small-iframe', 'change-view', {view: 'entries'})">Switch to Entries</button>
+                <button onclick="sendMessage('small-iframe', 'change-view', {view: 'reports'})">Switch to Reports</button>
+            </div>
+        </div>
+        
+        <!-- Medium iframe test (tablet-like) -->
+        <div class="test-section">
+            <h2>Medium Iframe (500x500) - Tablet Simulation</h2>
+            <div class="size-info">Simulates tablet or medium sidebar embedding</div>
+            <div class="iframe-container">
+                <iframe 
+                    id="medium-iframe"
+                    src="http://localhost:5173"
+                    width="500" 
+                    height="500"
+                    title="Time Tracker Medium">
+                </iframe>
+            </div>
+            <div class="controls">
+                <button onclick="sendMessage('medium-iframe', 'resize', {width: 600, height: 500})">Resize to 600x500</button>
+                <button onclick="sendMessage('medium-iframe', 'resize', {width: 500, height: 600})">Resize to 500x600</button>
+                <button onclick="sendMessage('medium-iframe', 'config', {theme: 'dark'})">Send Config</button>
+            </div>
+        </div>
+        
+        <!-- Large iframe test (desktop-like) -->
+        <div class="test-section">
+            <h2>Large Iframe (800x600) - Desktop Simulation</h2>
+            <div class="size-info">Simulates desktop or full-width embedding</div>
+            <div class="iframe-container">
+                <iframe 
+                    id="large-iframe"
+                    src="http://localhost:5173"
+                    width="800" 
+                    height="600"
+                    title="Time Tracker Large">
+                </iframe>
+            </div>
+            <div class="controls">
+                <button onclick="testAllFeatures('large-iframe')">Test All Features</button>
+                <button onclick="clearLog()">Clear Log</button>
+            </div>
+        </div>
+        
+        <!-- Message log -->
+        <div class="test-section">
+            <h2>Message Log</h2>
+            <div class="log" id="message-log">
+                <div>Waiting for messages from iframes...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Message logging
+        function logMessage(message) {
+            const log = document.getElementById('message-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('message-log').innerHTML = '<div>Log cleared...</div>';
+        }
+        
+        // Listen for messages from iframes
+        window.addEventListener('message', function(event) {
+            // In a real implementation, you'd validate the origin
+            if (event.data && event.data.source === 'time-tracker') {
+                const { type, payload, timestamp } = event.data;
+                logMessage(`Received: ${type} - ${JSON.stringify(payload)}`);
+                
+                // Handle specific message types
+                switch (type) {
+                    case 'ready':
+                        logMessage(`Time tracker ready with capabilities: ${JSON.stringify(payload.capabilities)}`);
+                        break;
+                    case 'timer-update':
+                        logMessage(`Timer update: Running=${payload.isRunning}, Elapsed=${payload.elapsedTime}s`);
+                        break;
+                    case 'resize':
+                        logMessage(`Resize requested: ${payload.width}x${payload.height}`);
+                        break;
+                    case 'notification':
+                        logMessage(`Notification: ${payload.message} (${payload.type})`);
+                        break;
+                    case 'error':
+                        logMessage(`Error: ${payload.error}`);
+                        break;
+                    case 'view-changed':
+                        logMessage(`View changed to: ${payload.view}`);
+                        break;
+                }
+            }
+        });
+        
+        // Send message to specific iframe
+        function sendMessage(iframeId, type, data) {
+            const iframe = document.getElementById(iframeId);
+            if (iframe && iframe.contentWindow) {
+                const message = {
+                    type: type,
+                    payload: data,
+                    timestamp: Date.now(),
+                    source: 'parent-frame'
+                };
+                
+                iframe.contentWindow.postMessage(message, '*');
+                logMessage(`Sent to ${iframeId}: ${type} - ${JSON.stringify(data)}`);
+            }
+        }
+        
+        // Test all features
+        function testAllFeatures(iframeId) {
+            logMessage('Starting comprehensive feature test...');
+            
+            setTimeout(() => sendMessage(iframeId, 'change-view', {view: 'timer'}), 1000);
+            setTimeout(() => sendMessage(iframeId, 'change-view', {view: 'entries'}), 3000);
+            setTimeout(() => sendMessage(iframeId, 'change-view', {view: 'reports'}), 5000);
+            setTimeout(() => sendMessage(iframeId, 'resize', {width: 700, height: 500}), 7000);
+            setTimeout(() => sendMessage(iframeId, 'config', {theme: 'light', notifications: true}), 9000);
+            
+            logMessage('Feature test sequence started (will complete in 10 seconds)');
+        }
+        
+        // Initialize
+        logMessage('Iframe test page loaded. Waiting for time tracker to initialize...');
+        
+        // Simulate GoHighLevel environment
+        logMessage('Simulating GoHighLevel iframe environment');
+        logMessage('Origin: ' + window.location.origin);
+        logMessage('User Agent: ' + navigator.userAgent);
+    </script>
+</body>
+</html>
