@@ -111,12 +111,12 @@ async function startServer() {
       
       // Test if routes are actually mounted
       console.log('🔍 Testing route mounting...');
-      const routes = [];
-      app._router.stack.forEach((middleware) => {
+      const routes: string[] = [];
+      (app as any)._router.stack.forEach((middleware: any) => {
         if (middleware.route) {
           routes.push(middleware.route.path);
         } else if (middleware.name === 'router') {
-          middleware.handle.stack.forEach((handler) => {
+          middleware.handle.stack.forEach((handler: any) => {
             if (handler.route) {
               routes.push(handler.route.path);
             }
@@ -192,7 +192,9 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-// Start the server
-startServer();
+// Start the server only if not in Vercel environment
+if (!process.env.VERCEL) {
+  startServer();
+}
 
 export default app;

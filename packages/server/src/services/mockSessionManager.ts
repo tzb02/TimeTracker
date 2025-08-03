@@ -44,4 +44,12 @@ export class MockSessionManager implements SessionManager {
     
     return true;
   }
+
+  async createSession(sessionId: string, sessionData: any, ttl: number = 24 * 60 * 60): Promise<void> {
+    await this.set(`session:${sessionId}`, sessionData, ttl);
+  }
+
+  async storeRefreshToken(userId: string, refreshToken: string, ttl: number = 7 * 24 * 60 * 60): Promise<void> {
+    await this.set(`refresh:${userId}`, refreshToken, ttl);
+  }
 }

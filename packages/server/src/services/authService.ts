@@ -9,7 +9,7 @@ import {
   validatePassword,
   validateEmail 
 } from '../utils/auth';
-import { getSessionManager, SessionData } from './sessionManager';
+import { getSessionManager, SessionManager, SessionData } from './sessionManager';
 
 export interface LoginResult {
   user: Omit<User, 'passwordHash'>;

@@ -1,5 +1,14 @@
 import Redis from 'ioredis';
 
+export interface SessionData {
+  userId: string;
+  email: string;
+  role: string;
+  organizationId?: string;
+  createdAt: Date;
+  lastActivity: Date;
+}
+
 export interface SessionManager {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
@@ -7,6 +16,8 @@ export interface SessionManager {
   get(key: string): Promise<any>;
   delete(key: string): Promise<void>;
   exists(key: string): Promise<boolean>;
+  createSession(sessionId: string, sessionData: SessionData, ttl?: number): Promise<void>;
+  storeRefreshToken(userId: string, refreshToken: string, ttl?: number): Promise<void>;
 }
 
 class RedisSessionManager implements SessionManager {
@@ -64,6 +75,14 @@ class RedisSessionManager implements SessionManager {
   async exists(key: string): Promise<boolean> {
     const result = await this.client.exists(key);
     return result === 1;
+  }
+
+  async createSession(sessionId: string, sessionData: SessionData, ttl: number = 24 * 60 * 60): Promise<void> {
+    await this.set(`session:${sessionId}`, sessionData, ttl);
+  }
+
+  async storeRefreshToken(userId: string, refreshToken: string, ttl: number = 7 * 24 * 60 * 60): Promise<void> {
+    await this.set(`refresh:${userId}`, refreshToken, ttl);
   }
 }
 

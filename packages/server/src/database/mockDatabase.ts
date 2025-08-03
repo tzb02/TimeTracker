@@ -1,4 +1,4 @@
-import { DatabaseConnection } from './connection';
+import { Database } from './index';
 
 interface MockTable {
   [key: string]: any[];
@@ -7,7 +7,7 @@ interface MockTable {
 /**
  * Mock database implementation for development when PostgreSQL is not available
  */
-export class MockDatabase implements DatabaseConnection {
+export class MockDatabase implements Database {
   private tables: MockTable = {
     users: [],
     projects: [],
