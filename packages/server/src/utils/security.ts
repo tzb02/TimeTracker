@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export class SecurityUtils {
   private static readonly SALT_ROUNDS = 12;

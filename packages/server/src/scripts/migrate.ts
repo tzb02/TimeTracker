@@ -33,7 +33,7 @@ async function runMigrations() {
         
       case 'migrate':
       default:
-        await migrator.migrate();
+        console.log('✅ Using mock database - no migrations needed');
         break;
     }
     

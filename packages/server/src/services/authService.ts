@@ -110,8 +110,8 @@ export class AuthService {
       userId: user.id,
       email: user.email,
       role: user.role,
-      loginTime: Date.now(),
-      lastActivity: Date.now(),
+      loginTime: new Date(),
+      lastActivity: new Date(),
       refreshTokenId,
     };
 
@@ -162,8 +162,8 @@ export class AuthService {
       userId: user.id,
       email: user.email,
       role: user.role,
-      loginTime: Date.now(),
-      lastActivity: Date.now(),
+      loginTime: new Date(),
+      lastActivity: new Date(),
       refreshTokenId,
     };
 

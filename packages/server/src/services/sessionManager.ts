@@ -5,8 +5,9 @@ export interface SessionData {
   email: string;
   role: string;
   organizationId?: string;
-  createdAt: Date;
+  loginTime: Date;
   lastActivity: Date;
+  refreshTokenId?: string;
 }
 
 export interface SessionManager {
@@ -17,7 +18,13 @@ export interface SessionManager {
   delete(key: string): Promise<void>;
   exists(key: string): Promise<boolean>;
   createSession(sessionId: string, sessionData: SessionData, ttl?: number): Promise<void>;
-  storeRefreshToken(userId: string, refreshToken: string, ttl?: number): Promise<void>;
+  storeRefreshToken(refreshTokenId: string, userId: string, ttl?: number): Promise<void>;
+  getSession(sessionId: string): Promise<SessionData | null>;
+  deleteSession(sessionId: string): Promise<void>;
+  deleteRefreshToken(refreshTokenId: string): Promise<void>;
+  deleteUserSessions(userId: string): Promise<void>;
+  deleteUserRefreshTokens(userId: string): Promise<void>;
+  updateActivity(sessionId: string): Promise<void>;
 }
 
 class RedisSessionManager implements SessionManager {
@@ -81,8 +88,50 @@ class RedisSessionManager implements SessionManager {
     await this.set(`session:${sessionId}`, sessionData, ttl);
   }
 
-  async storeRefreshToken(userId: string, refreshToken: string, ttl: number = 7 * 24 * 60 * 60): Promise<void> {
-    await this.set(`refresh:${userId}`, refreshToken, ttl);
+  async storeRefreshToken(refreshTokenId: string, userId: string, ttl: number = 7 * 24 * 60 * 60): Promise<void> {
+    await this.set(`refresh:${refreshTokenId}`, { userId, refreshTokenId }, ttl);
+  }
+
+  async getSession(sessionId: string): Promise<SessionData | null> {
+    return await this.get(`session:${sessionId}`);
+  }
+
+  async deleteSession(sessionId: string): Promise<void> {
+    await this.delete(`session:${sessionId}`);
+  }
+
+  async deleteRefreshToken(refreshTokenId: string): Promise<void> {
+    await this.delete(`refresh:${refreshTokenId}`);
+  }
+
+  async deleteUserSessions(userId: string): Promise<void> {
+    // Get all session keys for this user
+    const keys = await this.client.keys(`session:*`);
+    for (const key of keys) {
+      const sessionData = await this.get(key);
+      if (sessionData && sessionData.userId === userId) {
+        await this.delete(key);
+      }
+    }
+  }
+
+  async deleteUserRefreshTokens(userId: string): Promise<void> {
+    // Get all refresh token keys for this user
+    const keys = await this.client.keys(`refresh:*`);
+    for (const key of keys) {
+      const tokenData = await this.get(key);
+      if (tokenData && tokenData.userId === userId) {
+        await this.delete(key);
+      }
+    }
+  }
+
+  async updateActivity(sessionId: string): Promise<void> {
+    const sessionData = await this.getSession(sessionId);
+    if (sessionData) {
+      sessionData.lastActivity = new Date();
+      await this.set(`session:${sessionId}`, sessionData, 24 * 60 * 60); // Reset TTL
+    }
   }
 }
 
